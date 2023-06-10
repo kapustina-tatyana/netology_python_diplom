@@ -1,0 +1,282 @@
+## API для поставщиков
+
+@baseUrl = http://localhost:8037/api/v1
+@baseEmail = покупатель@mail.ru
+
+@baseshopEmail = магазин@yandex.ru
+
+@confirm_token = 3dda7f90e9e514c28fa238c3253428f2
+
+@confirm_token_shop = ce24a05594152487be9
+
+@password = 1q2w3e4r_T
+
+@access_token = {{login.response.body.Token}}
+
+@access_shop_token = {{login_shop.response.body.Token}}
+
+
+###Регистрация пользователя
+
+POST {{baseUrl}}/user/register
+Content-Type: application/json
+
+{
+      "first_name": "ivan",
+      "last_name": "ivanov",
+      "company": "ultra",
+      "position": "pos1",
+      "email": "{{baseEmail}}",
+      "password": "{{password}}"
+}
+
+###Регистрация еще одного пользователя
+
+POST {{baseUrl}}/user/register
+Content-Type: application/json
+
+{
+      "first_name": "vano",
+      "last_name": "vanov",
+      "company": "ultra1",
+      "position": "pos2",
+      "email": "{{baseshopEmail}}",
+      "password": "{{password}}",
+      "type": "shop"
+}
+
+###Подтверждение регистрации пользователя
+POST {{baseUrl}}/user/register/confirm
+Content-Type: application/json
+
+{
+    "email": "{{baseEmail}}",
+    "token": "{{confirm_token}}"
+}
+
+###Подтверждение регистрации магазина-пользователя
+POST {{baseUrl}}/user/register/confirm
+Content-Type: application/json
+
+{
+    "email": "{{baseshopEmail}}",
+    "token": "{{confirm_token_shop}}"
+}
+
+###Авторизация пользователя
+# @name login
+POST {{baseUrl}}/user/login
+Content-Type: application/json
+
+{
+    "email": "{{baseEmail}}",
+    "password": "{{password}}"
+}
+
+###Авторизация магазина-пользователя
+# @name login_shop
+POST {{baseUrl}}/user/login
+Content-Type: application/json
+
+{
+    "email": "{{baseshopEmail}}",
+    "password": "{{password}}"
+}
+
+
+###Сигнал на обновление прайса
+
+POST {{baseUrl}}/partner/update
+Content-Type: application/json
+Authorization: Token {{ access_shop_token }}
+
+{
+    "url": "http://partner-site.ru/files/price.yaml"
+}
+
+###Сигнал на обновление прайса
+
+POST {{baseUrl}}/partner/update
+Content-Type: application/json
+Authorization: Token {{ access_shop_token }}
+
+{
+    "url": "https://raw.githubusercontent.com/netology-code/pd-diplom/master/data/shop1.yaml"
+}
+
+
+### Статус поставщика
+
+GET {{baseUrl}}/partner/state
+Content-Type: application/json
+Authorization: Token {{ access_shop_token }}
+
+###Категории
+
+GET {{baseUrl}}/categories
+Content-Type: application/json
+Authorization: Token {{ access_token }}
+
+
+#### Включить/выключить заказы
+
+POST {{baseUrl}}/partner/state
+Content-Type: application/json
+Authorization: Token {{ access_shop_token }}
+
+{
+    "state": "on"
+}
+
+
+#### Получить информацию о товарах
+
+GET {{baseUrl}}/products
+Content-Type: application/json
+Authorization: Token {{ access_token }}
+
+
+#### Получить статус получения заказов пользователя
+
+GET {{baseUrl}}/order
+Content-Type: application/json
+Authorization: Token {{ access_token }}
+
+
+
+#### Наполнить корзину
+
+POST {{baseUrl}}/basket
+Content-Type: application/json
+Authorization: Token {{ access_token }}
+
+{
+"items": [
+        {
+            "product_info": "1",
+            "quantity": "2"
+        },
+        {
+            "product_info": "3",
+            "quantity": "1"
+        }
+    ]
+}
+
+
+#### Посмотреть корзину
+
+GET {{baseUrl}}/basket
+Content-Type: application/json
+Authorization: Token {{ access_token }}
+
+
+#### Изменить корзину
+
+PUT {{baseUrl}}/basket
+Content-Type: application/json
+Authorization: Token {{ access_token }}
+
+{
+"items": [
+        {
+            "id": "1",
+            "quantity": "3"
+        }
+    ]
+}
+
+
+#### Посмотреть корзину
+
+GET {{baseUrl}}/basket
+Content-Type: application/json
+Authorization: Token {{ access_token }}
+
+
+#### Удалить товар из корзины
+
+DELETE {{baseUrl}}/basket
+Content-Type: application/json
+Authorization: Token {{ access_token }}
+
+{
+"items": "24"
+}
+
+
+#### Посмотреть корзину
+
+GET {{baseUrl}}/basket
+Content-Type: application/json
+Authorization: Token {{ access_token }}
+
+
+###
+GET {{baseUrl}}/user/contact
+Authorization: Token {{ access_token }}
+
+###
+POST {{baseUrl}}/user/contact
+Authorization: Token {{ access_token }}
+Content-Type: application/json
+
+{
+    "city": "Moscow",
+    "street": "Arbat",
+    "house": "2",
+    "structure": "1",
+    "building": "0",
+    "apartment": "0",
+    "phone": "77-77-87"
+}
+
+###
+PUT {{baseUrl}}/user/contact
+Authorization: Token {{ access_token }}
+Content-Type: application/json
+
+{
+    "city": "Moscoow",
+    "street": "NewArbat",
+    "house": "3",
+    "structure": "2",
+    "building": "0",
+    "apartment": "0",
+    "phone": "77-77-78",
+    "id": "1"
+}
+
+###
+DELETE {{baseUrl}}/user/contact
+Authorization: Token {{ access_token }}
+Content-Type: application/json
+
+{
+  "items" : "1"
+}
+
+
+### Разместить заказ
+
+POST {{baseUrl}}/order
+Authorization: Token {{ access_token }}
+Content-Type:application/json
+
+{
+  "id":"2",
+  "contact" : "1"
+}
+
+#### Посмотреть заказы покупателя
+
+GET {{baseUrl}}/order
+Content-Type: application/json
+Authorization: Token {{ access_token }}
+
+
+### Посмотреть заказы
+
+GET {{baseUrl}}/partner/orders
+Authorization: Token {{ access_shop_token }}
+Content-Type:application/json
