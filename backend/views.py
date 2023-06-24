@@ -20,7 +20,50 @@ from backend.models import Shop, Category, Product, ProductInfo, Parameter, Prod
     Contact, ConfirmEmailToken
 from backend.serializers import UserSerializer, CategorySerializer, ShopSerializer, ProductInfoSerializer, \
     OrderItemSerializer, OrderSerializer, ContactSerializer
-from backend.signals import new_user_registered, new_order
+
+
+from backend.tasks import send_email
+
+
+from django.conf import settings
+from django.core.mail import EmailMultiAlternatives
+from django.dispatch import receiver
+from django_rest_passwordreset.signals import reset_password_token_created
+from backend.tasks import send_email
+
+@receiver(reset_password_token_created)
+def password_reset_token_created(sender, instance, reset_password_token, **kwargs):
+    """
+    Отправляем письмо с токеном для сброса пароля
+    When a token is created, an e-mail needs to be sent to the user
+    :param sender: View Class that sent the signal
+    :param instance: View Instance that sent the signal
+    :param reset_password_token: Token Model Object
+    :param kwargs:
+    :return:
+    """
+    # send an e-mail to the user
+    print(f"Password Reset Token {reset_password_token.key} for {reset_password_token.user} to {reset_password_token.user.email}")
+    send_email.delay(
+        # title:
+        f"Password Reset Token for {reset_password_token.user}",
+        # message:
+        reset_password_token.key,
+        # to:
+        reset_password_token.user.email
+    )
+
+    # msg = EmailMultiAlternatives(
+    #     # title:
+    #     f"Password Reset Token for {reset_password_token.user}",
+    #     # message:
+    #     reset_password_token.key,
+    #     # from:
+    #     settings.EMAIL_HOST_USER,
+    #     # to:
+    #     [reset_password_token.user.email]
+    # )
+    # msg.send()
 
 
 class RegisterAccount(APIView):
@@ -55,9 +98,12 @@ class RegisterAccount(APIView):
                     user = user_serializer.save()
                     user.set_password(data['password'])
                     user.save()
-                    confirm_token = new_user_registered.send(sender=self.__class__, user_id=user.id)
-                    print(confirm_token[0][1])
-                    return JsonResponse({'Status': True, 'confirm_token': str(confirm_token[0][1])})
+                    # confirm_token = send_email(sender=self.__class__, user_id=user.id)
+                    token, _ = ConfirmEmailToken.objects.get_or_create(user_id=user.id)
+                    send_email.delay("Confirmation of registration", f"Your confirmation token {token.key}",
+                                     user.email)
+                    print(token.key)
+                    return JsonResponse({'Status': True, 'confirm_token': token.key})
                 else:
                     return JsonResponse({'Status': False, 'Errors': user_serializer.errors})
 
@@ -85,6 +131,8 @@ class ConfirmAccount(APIView):
                 return JsonResponse({'Status': False, 'Errors': 'Неправильно указан токен или email'})
 
         return JsonResponse({'Status': False, 'Errors': 'Не указаны все необходимые аргументы'})
+
+
 
 
 class AccountDetails(APIView):
@@ -505,7 +553,11 @@ class OrderView(APIView):
                     return JsonResponse({'Status': False, 'Errors': 'Неправильно указаны аргументы'})
                 else:
                     if is_updated:
-                        new_order.send(sender=self.__class__, user_id=request.user.id)
+                        # new_order_task(sender=self.__class__, user_id=request.user.id)
+                        user = request.user
+                        send_email.delay("Обновление статуса заказа",
+                                                       "Заказ сформирован",
+                                                       user.email)
                         return JsonResponse({'Status': True})
 
         return JsonResponse({'Status': False, 'Errors': 'Не указаны все необходимые аргументы'})
