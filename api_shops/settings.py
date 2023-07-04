@@ -45,7 +45,9 @@ INSTALLED_APPS = [
     'backend.apps.BackendConfig',
     'rest_framework',
     'rest_framework.authtoken',
-    'django_rest_passwordreset'
+    'django_rest_passwordreset',
+    'drf_spectacular',
+    'drf_spectacular_sidecar'
 ]
 
 MIDDLEWARE = [
@@ -161,9 +163,23 @@ REST_FRAMEWORK = {
         'rest_framework.authentication.TokenAuthentication',
     ),
 
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema'
+
 }
 DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
 
 # Celery settings
 CELERY_BROKER_URL = "redis://localhost:6379"
 CELERY_RESULT_BACKEND = "redis://localhost:6379"
+
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'Backend shop API',
+    'DESCRIPTION': 'API for shops',
+    'VERSION': '1.0.0',
+    'SERVE_INCLUDE_SCHEMA': False,
+    # OTHER SETTINGS
+    'SCHEMA_PATH_PREFIX': '/api/v1/',
+    'SWAGGER_UI_DIST': 'SIDECAR',  # shorthand to use the sidecar instead
+    'SWAGGER_UI_FAVICON_HREF': 'SIDECAR',
+    'REDOC_DIST': 'SIDECAR',
+}

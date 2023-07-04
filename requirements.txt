@@ -8,3 +8,5 @@ requests
 python-dotenv
 celery
 redis
+drf_spectacular
+drf_spectacular_sidecar
