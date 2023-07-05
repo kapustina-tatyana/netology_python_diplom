@@ -60,10 +60,12 @@ manage.py migrate
 manage.py createsuperuser
 ```
 
-Выполнить команду:
+В разных терминалах выполнить команды:
 
 ```bash
 python manage.py runserver 0.0.0.0:8037
+
+python -m celery -A api_shops worker -l info
 ```
 
 Для тестирования можно открыть файл [api_shops.http](api_shops.http)
@@ -72,3 +74,11 @@ python manage.py runserver 0.0.0.0:8037
 
 Для удобства отладки, первые два запроса (POST {{baseUrl}}/user/register) возвращают "confirm_token",
 его надо прописать в соответствующие переменные, для покупателя и магазина.
+
+Страничка swagger:
+
+![img.png](img.png)
+
+Сработал DRF throttling:
+
+![img_1.png](img_1.png)
